@@ -16,7 +16,8 @@ def extract_red(image):
     Returns:
         numpy.array: Output 2D array containing the red channel.
     """
-    raise NotImplementedError
+
+    return image[:, :, 2].copy()
 
 
 def extract_green(image):
@@ -30,7 +31,8 @@ def extract_green(image):
     Returns:
         numpy.array: Output 2D array containing the green channel.
     """
-    raise NotImplementedError
+    
+    return image[:, :, 1].copy()
 
 
 def extract_blue(image):
@@ -44,7 +46,8 @@ def extract_blue(image):
     Returns:
         numpy.array: Output 2D array containing the blue channel.
     """
-    raise NotImplementedError
+    
+    return image[:, :, 0].copy()
 
 
 def swap_green_blue(image):
@@ -59,7 +62,10 @@ def swap_green_blue(image):
     Returns:
         numpy.array: Output 3D array with the green and blue channels swapped.
     """
-    raise NotImplementedError
+    
+    temp_img = image.copy()
+    temp_img[:, :, [0, 1]] = temp_img[:, :, [1, 0]]
+    return temp_img
 
 
 def copy_paste_middle(src, dst, shape):
@@ -85,7 +91,30 @@ def copy_paste_middle(src, dst, shape):
     Returns:
         numpy.array: Output monochrome image (2D array)
     """
-    raise NotImplementedError
+
+    result = np.copy(dst)
+    
+    copy_height, copy_width = shape
+    
+    src_center_y = src.shape[0] // 2
+    src_center_x = src.shape[1] // 2
+    
+    dst_center_y = dst.shape[0] // 2
+    dst_center_x = dst.shape[1] // 2
+    
+    src_start_y = src_center_y - copy_height // 2
+    src_end_y = src_start_y + copy_height
+    src_start_x = src_center_x - copy_width // 2
+    src_end_x = src_start_x + copy_width
+    
+    dst_start_y = dst_center_y - copy_height // 2
+    dst_end_y = dst_start_y + copy_height
+    dst_start_x = dst_center_x - copy_width // 2
+    dst_end_x = dst_start_x + copy_width
+    
+    result[dst_start_y:dst_end_y, dst_start_x:dst_end_x] = src[src_start_y:src_end_y, src_start_x:src_end_x]
+    
+    return result
 
 
 
@@ -105,7 +134,30 @@ def copy_paste_middle_circle(src, dst, radius):
     Returns:
         numpy.array: Output monochrome image (2D array)
     """
-    raise NotImplementedError
+
+    result = np.copy(dst)
+    
+    src_y, src_x = np.ogrid[:src.shape[0], :src.shape[1]]
+    dst_y, dst_x = np.ogrid[:dst.shape[0], :dst.shape[1]]
+    
+    src_r, src_c = (src.shape[0] - 1) // 2, (src.shape[1] - 1) // 2
+    src_mask = (src_x - src_c) ** 2 + (src_y - src_r) ** 2 <= radius ** 2
+    
+    dst_r, dst_c = (dst.shape[0] - 1) // 2, (dst.shape[1] - 1) // 2
+    dst_mask = (dst_x - dst_c) ** 2 + (dst_y - dst_r) ** 2 <= radius ** 2
+    
+    for i in range(dst.shape[0]):
+        for j in range(dst.shape[1]):
+            if dst_mask[i, j]:
+                src_i = i - dst_r + src_r
+                src_j = j - dst_c + src_c
+                
+                if (0 <= src_i < src.shape[0] and 
+                    0 <= src_j < src.shape[1] and 
+                    src_mask[src_i, src_j]):
+                    result[i, j] = src[src_i, src_j]
+    
+    return result
 
 
 def image_stats(image):
@@ -127,7 +179,10 @@ def image_stats(image):
                mean (float): Input array mean / average value.
                stddev (float): Input array standard deviation.
     """
-    raise NotImplementedError
+    
+    # First changing to float
+    image = image.astype(float)
+    return np.min(image), np.max(image), np.mean(image), np.std(image)
 
 
 def center_and_normalize(image, scale):
@@ -149,7 +204,16 @@ def center_and_normalize(image, scale):
     Returns:
         numpy.array: Output 2D image.
     """
-    raise NotImplementedError
+    
+    image = image.astype(np.float64)
+    mean = np.mean(image)
+    
+    image = image - mean
+    image = image * scale / np.std(image)
+    image = image + mean
+    
+    return image
+
 
 
 def shift_image_left(image, shift):
@@ -174,8 +238,18 @@ def shift_image_left(image, shift):
     Returns:
         numpy.array: Output shifted 2D image.
     """
-    raise NotImplementedError
 
+    result = np.copy(image)
+    
+    if shift > 0:
+        result[:, :-shift] = image[:, shift:]
+        result[:, -shift:] = image[:, -1:]
+    elif shift < 0:
+        shift = abs(shift)
+        result[:, shift:] = image[:, :-shift]
+        result[:, :shift] = image[:, :1]
+    
+    return result
 
 def difference_image(img1, img2):
     """ Returns the difference between the two input images (img1 - img2). The resulting array must be normalized
@@ -192,7 +266,23 @@ def difference_image(img1, img2):
     Returns:
         numpy.array: Output 2D image containing the result of subtracting img2 from img1.
     """
-    raise NotImplementedError
+
+    img1_copy = np.copy(img1).astype(np.float64)
+    img2_copy = np.copy(img2).astype(np.float64)
+
+    diff = img1_copy - img2_copy
+    
+    min_val = np.min(diff)
+    max_val = np.max(diff)
+    
+    if max_val == min_val:
+        return np.zeros_like(diff, dtype=np.float64)
+    
+    diff_normalized = (diff - min_val) / (max_val - min_val)
+    
+    diff_scaled = diff_normalized * 255.0
+    
+    return diff_scaled
 
 
 def add_noise(image, channel, sigma):
@@ -220,7 +310,14 @@ def add_noise(image, channel, sigma):
         numpy.array: Output 3D array containing the result of adding Gaussian noise to the
             specified channel.
     """
-    raise NotImplementedError
+
+    result = np.copy(image).astype(np.float64)
+    
+    noise = np.random.normal(0, sigma, image.shape)
+    
+    result[:, :, channel] += noise[:, :, channel]
+    
+    return result
 
 
 def build_hybrid_image(image1, image2, cutoff_frequency):
@@ -246,7 +343,9 @@ def build_hybrid_image(image1, image2, cutoff_frequency):
 
     high_frequencies = image2 - cv2.filter2D(image2,-1,filter)
     
-    raise NotImplementedError
+    hybrid_image = low_frequencies + high_frequencies
+    
+    return hybrid_image
 
 
 def vis_hybrid_image(hybrid_image):

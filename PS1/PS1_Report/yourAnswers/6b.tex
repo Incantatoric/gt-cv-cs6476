@@ -1,0 +1,2 @@
+Negative pixel values indicate normalized image representations (e.g., -1 to 1 range with 0 being the gray) or result from mathematical operations like image subtraction. In these cases, negative values have meanings that should not be simply ignored.
+Clipping negatives to zero would lose important information about gradients, edges, and relationships between pixels. Clipped values cannot be recovered after all. Negative values might originate from mishandling the data, but one should examine it carefully to understand the exact cause.
