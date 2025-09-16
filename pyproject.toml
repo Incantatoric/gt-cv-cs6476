@@ -1,0 +1,19 @@
+[project]
+name = "gt-cv-cs6476"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Seongwon Yun"}
+]
+requires-python = ">=3.11"
+package-mode = false
+dependencies = [
+    "numpy (>=2.0.0,<2.3.0)",
+    "opencv-python (>=4.12.0.88,<5.0.0.0)",
+    "ipython (>=9.5.0,<10.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

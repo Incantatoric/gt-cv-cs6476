@@ -3,12 +3,18 @@ import cv2
 
 from ps1 import *
 
+# import sys
+# from importlib import reload
+
+# mod = reload(sys.modules["ps1"])     # reload returns the module
+# vars().update(mod.__dict__) 
+
 
 def main():
 
     # TODO: Insert your image file paths here:
-    img1_filename = None
-    img2_filename = None
+    img1_filename = "PS1_Report/ps1-1-a-1.png"
+    img2_filename = "PS1_Report/ps1-1-a-2.png"
 
     # # 1a
     img1 = cv2.imread(img1_filename)
@@ -44,8 +50,8 @@ def main():
 
     # # 3a
 
-    # TODO: Choose the monochrome image for img1.
-    mono1 = None
+    # Use the green channel of img1 (created in section 2b)
+    mono1 = img1_green
 
     mono2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
 
@@ -83,8 +89,9 @@ def main():
 
     # # 5 Noise
 
-    # TODO: Choose a sigma value:
-    sigma = None
+    # Choose a sigma value for visible but not overwhelming noise
+    # Start with sigma=25, you can adjust this value to get the desired noise level
+    sigma = 25
 
     # # 5a
     channel = 1
@@ -100,7 +107,7 @@ def main():
     img1 = cv2.imread('dog.bmp')
     img2 = cv2.imread('cat.bmp')
 
-    cutoff_frequency = 7
+    cutoff_frequency = 5
 
     hybrid_image = build_hybrid_image(img1, img2, cutoff_frequency)
     
@@ -109,6 +116,12 @@ def main():
     # or remove the lines 'vis.copy()*255' and 'vis[:,:,::-1] below.
 
     
+    # Save the hybrid image for the report
+    hybrid_vis = (hybrid_image.copy() * 255)
+    hybrid_vis = hybrid_vis.astype(np.uint8)
+    cv2.imwrite("ps1-7-a-1.png", hybrid_vis[:, :, ::-1])
+    
+    # Also create the multi-scale visualization
     vis = vis_hybrid_image(hybrid_image)
     vis = (vis.copy() * 255)
     vis = vis.astype(np.uint8)
