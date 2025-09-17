@@ -10,7 +10,8 @@ package-mode = false
 dependencies = [
     "numpy (>=2.0.0,<2.3.0)",
     "opencv-python (>=4.12.0.88,<5.0.0.0)",
-    "ipython (>=9.5.0,<10.0.0)"
+    "ipython (>=9.5.0,<10.0.0)",
+    "matplotlib (>=3.10.6,<4.0.0)"
 ]
 
 

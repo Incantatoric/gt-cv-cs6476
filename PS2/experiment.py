@@ -5,6 +5,13 @@ from matplotlib import pyplot as plt
 
 import ps2
 
+
+import sys
+from importlib import reload
+
+mod = reload(sys.modules["ps2"])     # reload returns the module
+vars().update(mod.__dict__) 
+
 INPUT_DIR = "input_images/"
 OUTPUT_DIR = "output_images/"
 
@@ -111,7 +118,7 @@ def part_1a():
 
     # Define a radii range, you may define a smaller range based on your
     # observations.
-    radii_range = range(10, 30, 1)
+    radii_range = range(20, 30, 1)
 
     for img_in, label in zip(input_images, output_labels):
 
@@ -160,11 +167,21 @@ def template_match_test():
 
         for method in ("tm_ssd", "tm_nssd", "tm_ccor", "tm_nccor"):
             """ Convert images to gray scale to save computation """
+            # Get template dimensions
+            if len(img_template.shape) == 3:
+                h, w, _ = img_template.shape
+            else:
+                h, w = img_template.shape
+
             top_left = ps2.template_match(img_in, img_template, method)
-            bottom_right = None
+            
+            # Calculate bottom_right using template dimensions
+            bottom_right = (top_left[0] + w, top_left[1] + h) # <--- THIS IS THE FIX
+            
             """Below is the helper code to print images for the report"""
             im_out = img_in.copy()
-            cv2.rectangle(im_out, top_left, bottom_right, 255, 2)
+            cv2.rectangle(im_out, top_left, bottom_right, (0, 0, 255), 2) # Changed color to red
+
             text = "(({}, {}))".format(top_left[0], top_left[1])
             place_text(text, top_left, im_out)
             cv2.imwrite(os.path.join(OUTPUT_DIR,
@@ -176,7 +193,7 @@ def compression_runner():
     img_bgr = cv2.imread(INPUT_DIR + 'dog.jpg', cv2.IMREAD_COLOR)
 
     # NOTE: FILL THIS VALUE OUT
-    keep = None
+    keep = 0.001
 
     img_compressed, compressed_frequency_img = ps2.compress_image_fft(
         img_bgr, keep)
@@ -190,7 +207,7 @@ def low_pass_filter_runner():
     img_bgr = np.ndarray.astype(img_bgr, dtype=np.double)
 
     "FILL THIS VALUE OUT"
-    radius = None
+    radius = 10
 
     img_low_pass, low_pass_frequency_img_mag = ps2.low_pass_filter(
         img_bgr, radius)
